@@ -55,17 +55,16 @@
 #include <stdio.h>
 #include <string.h>
 
-/* This project provides two demo applications.  A simple blinky style demo
- * application, and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is used to select between the two.
+/* This project provides three demo applications.  A simple blinky style demo
+ * application, a cache contention test for timing channel analysis, and a more
+ * comprehensive test and demo application.  The mainDEMO_TYPE setting selects
+ * which demo to run:
  *
- * If mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is 1 then the blinky demo will be built.
- * The blinky demo is implemented and described in main_blinky.c.
- *
- * If mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is not 1 then the comprehensive test and
- * demo application will be built.  The comprehensive test and demo application is
- * implemented and described in main_full.c. */
-#define mainCREATE_SIMPLE_BLINKY_DEMO_ONLY    1
+ *   1 = Blinky demo (main_blinky.c)
+ *   2 = Cache contention demo (main_cache_contention.c)
+ *   0 = Full demo (main_full.c) - default
+ */
+#define mainDEMO_TYPE  2
 
 /* Set to 1 to use direct mode and set to 0 to use vectored mode.
  * VECTOR MODE=Direct --> all traps into machine mode cause the pc to be set to the
@@ -95,10 +94,12 @@ extern void freertos_risc_v_trap_handler( void );
 extern void freertos_vector_table( void );
 
 /*
- * main_blinky() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 1.
- * main_full() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 0.
+ * main_blinky() is used when mainDEMO_TYPE is 1.
+ * main_cache_contention() is used when mainDEMO_TYPE is 2.
+ * main_full() is used when mainDEMO_TYPE is 0 (default).
  */
 extern void main_blinky( void );
+extern void main_cache_contention( void );
 extern void main_full( void );
 
 /*
@@ -125,11 +126,14 @@ void main( void )
     }
     #endif
 
-    /* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
-     * of this file. */
-    #if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
+    /* The mainDEMO_TYPE setting is described at the top of this file. */
+    #if ( mainDEMO_TYPE == 1 )
     {
         main_blinky();
+    }
+    #elif ( mainDEMO_TYPE == 2 )
+    {
+        main_cache_contention();
     }
     #else
     {
@@ -203,7 +207,8 @@ void vApplicationTickHook( void )
     * code must not attempt to block, and only the interrupt safe FreeRTOS API
     * functions can be used (those that end in FromISR()). */
 
-    #if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY != 1 )
+    // Full demo only
+    #if ( mainDEMO_TYPE == 0 )
     {
         extern void vFullDemoTickHookFunction( void );
 
