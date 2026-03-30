@@ -1,6 +1,6 @@
 [submodule "FreeRTOS/Source"]
 	path = FreeRTOS/Source
-	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+    url = https://github.com/svbrodersen/FreeRTOS-Kernel.git
     branch = temporal_fence_t
 [submodule "FreeRTOS/Test/CMock/CMock"]
 	path = FreeRTOS/Test/CMock/CMock
