@@ -178,10 +178,10 @@ static void prvClientTask( void * pvParameters )
         start_cycle = rdcycle();
 
         /* Send message to server (blocking). */
-        xQueueSend( xQueue, &xMessage, portMAX_DELAY );
+        xQueueSend( xQueue, &xMessage, 0 );
 
         /* Receive reply from server (blocking). */
-        xQueueReceive( xQueue, &xReceivedMessage, portMAX_DELAY );
+        xQueueReceive( xQueue, &xReceivedMessage, 0 );
 
         /* Record cycle count after receive (like S3K end). */
         end_cycle = rdcycle();
@@ -200,10 +200,10 @@ static void prvClientTask( void * pvParameters )
         start_cycle = rdcycle();
 
         /* Send message to server (blocking - will block until server receives). */
-        xQueueSend( xQueue, &xMessage, portMAX_DELAY );
+        xQueueSend( xQueue, &xMessage, 0 );
 
         /* Receive reply from server (blocking - will block until server sends). */
-        xQueueReceive( xQueue, &xReceivedMessage, portMAX_DELAY );
+        xQueueReceive( xQueue, &xReceivedMessage, 0 );
 
         /* Record cycle count after receive (like S3K end). */
         end_cycle = rdcycle();
@@ -232,7 +232,10 @@ static void prvClientTask( void * pvParameters )
 
 static void prvServerTask( void * pvParameters )
 {
-    IPCMessage_t xMessage;
+    IPCMessage_t xReceivedMessage;
+    IPCMessage_t xReplyMessage;
+    uint64_t server_before;
+    uint64_t server_after;
 
     /* Prevent the compiler warning about the unused parameter. */
     ( void ) pvParameters;
@@ -241,21 +244,26 @@ static void prvServerTask( void * pvParameters )
     {
         /* Record cycle count BEFORE waiting on queue (like S3K data[1]).
          * This captures when the server starts waiting. */
-        xMessage.cycle_before = rdcycle();
+        server_before = rdcycle();
 
         /* Wait for a message from the client (blocking).
          * This simulates s3k_ipc_replyrecv() which blocks until message arrives
          * and then sends reply when returning. */
-        xQueueReceive( xQueue, &xMessage, portMAX_DELAY );
+        xQueueReceive( xQueue, &xReceivedMessage, portMAX_DELAY );
 
         /* Record cycle count AFTER processing and before sending reply (like S3K data[0]).
          * In S3K, the kernel sends reply atomically when returning from replyrecv.
          * Here we record before xQueueSend to approximate this timing. */
-        xMessage.cycle_after = rdcycle();
+        server_after = rdcycle();
+
+        /* Prepare reply message with server timestamps and original iteration. */
+        xReplyMessage.cycle_after = server_after;
+        xReplyMessage.cycle_before = server_before;
+        xReplyMessage.ulIteration = xReceivedMessage.ulIteration;
 
         /* Send reply back to client.
          * This completes the IPC round-trip. */
-        xQueueSend( xQueue, &xMessage, portMAX_DELAY );
+        xQueueSend( xQueue, &xReplyMessage, 0 );
     }
 }
 /*-----------------------------------------------------------*/
