@@ -29,12 +29,28 @@
  * See https://www.freertos.org/freertos-on-qemu-mps2-an385-model.html for
  * instructions.
  *
- * This project provides two demo applications.  A simple blinky style project,
- * and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY constant, defined in this file, is used to
- * select between the two.  The simply blinky demo is implemented and described
- * in main_blinky.c.  The more comprehensive test and demo application is
- * implemented and described in main_full.c.
+ * This project provides three demo applications:
+ *
+ *   DEMO_VERSION = 0: Comprehensive test and demo application (main_full.c)
+ *     - Full FreeRTOS test suite with all kernel features
+ *     - Multiple test tasks running concurrently
+ *     - Comprehensive coverage of FreeRTOS API
+ *
+ *   DEMO_VERSION = 1: Simple blinky style project (main_blinky.c)
+ *     - Basic queue send/receive between two tasks
+ *     - Software timer demonstration
+ *     - Good for basic functionality verification
+ *
+ *   DEMO_VERSION = 2: IPC timing demo (main_ipc.c)
+ *     - Inter-Process Communication timing measurements
+ *     - Two tasks communicating via queue with cycle-accurate timing
+ *     - Uses RISC-V rdcycle instruction for precise measurements
+ *     - Synchronizes to time slices for consistent timing
+ *     - Outputs CSV data with FreeRTOS-specific info
+ *     - Inspired by S3K kernel IPC timing example
+ *
+ * The DEMO_VERSION constant, defined in this file, is used to select between
+ * the three demos.
  *
  * This file implements the code that is not demo specific, including the
  * hardware setup and FreeRTOS hook functions.
@@ -55,16 +71,11 @@
 #include <stdio.h>
 #include <string.h>
 
-/* This project provides three demo applications.  A simple blinky style demo
- * application, a cache contention test for timing channel analysis, and a more
- * comprehensive test and demo application.  The mainDEMO_TYPE setting selects
- * which demo to run:
- *
- *   1 = Blinky demo (main_blinky.c)
- *   2 = Cache contention demo (main_cache_contention.c)
- *   0 = Full demo (main_full.c) - default
- */
-#define mainDEMO_TYPE  2
+/* DEMO_VERSION selects which demo application to build:
+ *   0 = Comprehensive test and demo (main_full.c)
+ *   1 = Simple blinky demo (main_blinky.c)
+ *   2 = IPC timing demo (main_ipc.c) */
+#define DEMO_VERSION    2
 
 /* Set to 1 to use direct mode and set to 0 to use vectored mode.
  * VECTOR MODE=Direct --> all traps into machine mode cause the pc to be set to the
@@ -94,13 +105,13 @@ extern void freertos_risc_v_trap_handler( void );
 extern void freertos_vector_table( void );
 
 /*
- * main_blinky() is used when mainDEMO_TYPE is 1.
- * main_cache_contention() is used when mainDEMO_TYPE is 2.
- * main_full() is used when mainDEMO_TYPE is 0 (default).
+ * main_full() is used when DEMO_VERSION is 0.
+ * main_blinky() is used when DEMO_VERSION is 1.
+ * main_ipc() is used when DEMO_VERSION is 2.
  */
-extern void main_blinky( void );
-extern void main_cache_contention( void );
 extern void main_full( void );
+extern void main_blinky( void );
+extern void main_ipc( void );
 
 /*
  * Only the comprehensive demo uses application hook (callback) functions.  See
@@ -126,18 +137,22 @@ void main( void )
     }
     #endif
 
-    /* The mainDEMO_TYPE setting is described at the top of this file. */
-    #if ( mainDEMO_TYPE == 1 )
+    /* The DEMO_VERSION setting is described at the top of this file. */
+    #if ( DEMO_VERSION == 0 )
+    {
+        main_full();
+    }
+    #elif ( DEMO_VERSION == 1 )
     {
         main_blinky();
     }
-    #elif ( mainDEMO_TYPE == 2 )
+    #elif ( DEMO_VERSION == 2 )
     {
-        main_cache_contention();
+        main_ipc();
     }
     #else
     {
-        main_full();
+        #error "Invalid DEMO_VERSION. Must be 0, 1, or 2."
     }
     #endif
 }
@@ -202,19 +217,18 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask,
 void vApplicationTickHook( void )
 {
     /* This function will be called by each tick interrupt if
-    * configUSE_TICK_HOOK is set to 1 in FreeRTOSConfig.h.  User code can be
-    * added here, but the tick hook is called from an interrupt context, so
-    * code must not attempt to block, and only the interrupt safe FreeRTOS API
-    * functions can be used (those that end in FromISR()). */
+     * configUSE_TICK_HOOK is set to 1 in FreeRTOSConfig.h.  User code can be
+     * added here, but the tick hook is called from an interrupt context, so
+     * code must not attempt to block, and only the interrupt safe FreeRTOS API
+     * functions can be used (those that end in FromISR()). */
 
-    // Full demo only
-    #if ( mainDEMO_TYPE == 0 )
+    #if ( DEMO_VERSION == 0 )
     {
         extern void vFullDemoTickHookFunction( void );
 
         vFullDemoTickHookFunction();
     }
-    #endif /* mainCREATE_SIMPLE_BLINKY_DEMO_ONLY */
+    #endif /* DEMO_VERSION == 0 */
 }
 /*-----------------------------------------------------------*/
 

@@ -69,12 +69,23 @@
 #define configUSE_MALLOC_FAILED_HOOK	1
 #define configUSE_QUEUE_SETS			1
 #define configUSE_COUNTING_SEMAPHORES	1
+
+/* Constant-time queue operations configuration.
+ * When enabled, queue send/receive operations execute in constant time
+ * to prevent timing side-channel attacks. */
+#define configUSE_CONSTANT_TIME_QUEUES		1
+
+/* Target cycle count for queue operations (must be >= worst-case execution time).
+ * Measure worst-case timing first, then set this value accordingly.
+ * Default: 1000 cycles - adjust based on your system's WCET measurement. */
+#define configQUEUE_CONSTANT_TIME_CYCLES	1000UL
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
 #define configMAX_PRIORITIES			( 9UL )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 #define configQUEUE_REGISTRY_SIZE		10
 #define configSUPPORT_STATIC_ALLOCATION	1
+#define configSUPPORT_DYNAMIC_ALLOCATION    1
 
 /* Timer related defines. */
 #define configUSE_TIMERS				1
