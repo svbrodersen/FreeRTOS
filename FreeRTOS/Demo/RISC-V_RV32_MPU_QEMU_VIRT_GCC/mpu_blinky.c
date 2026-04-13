@@ -308,7 +308,7 @@ static void prvQueueSendTask( void * pvParameters )
 
     for( ; ; )
     {
-        if ( i == 1 )
+        if ( i == 5 )
         {
             printf( "%s: trying to access privileged data\n", __func__ );
             /* Triggers PMP access fault */

@@ -142,4 +142,8 @@ machine on which the test is developed). */
 #define configPROTECTED_KERNEL_OBJECT_POOL_SIZE        ( 150 )
 #define configSYSTEM_CALL_STACK_SIZE                   ( 512 )
 
+/* Security domains */
+#define configENABLE_DOMAINS ( 1 )
+#define configNUM_TIME_SLICES ( 32 )
+
 #endif /* FREERTOS_CONFIG_H */
