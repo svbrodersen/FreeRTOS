@@ -58,7 +58,7 @@
 	url = https://github.com/FreeRTOS/coreSNTP.git
 [submodule "FreeRTOS/Demo/ThirdParty/Community-Supported-Demos"]
 	path = FreeRTOS/Demo/ThirdParty/Community-Supported-Demos
-	url = https://github.com/FreeRTOS/FreeRTOS-Community-Supported-Demos
+	url = https://github.com/svbrodersen/FreeRTOS-Community-Supported-Demos.git
 [submodule "FreeRTOS/Demo/ThirdParty/Partner-Supported-Demos"]
 	path = FreeRTOS/Demo/ThirdParty/Partner-Supported-Demos
 	url = https://github.com/FreeRTOS/FreeRTOS-Partner-Supported-Demos
